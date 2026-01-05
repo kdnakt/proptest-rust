@@ -14,7 +14,13 @@ pub struct MetadataRequest {
 impl Readable for MetadataRequest {
     fn read(input: &mut impl Read) -> Result<Self> {
         let topics = read_nullable_array::<MetadataRequestTopic>(input, "topics", true)?;
-        todo!()
+        let allow_auto_topic_creation = bool::read(input)?;
+        let include_topic_authorized_operations = bool::read(input)?;
+        Ok(MetadataRequest {
+            topics,
+            allow_auto_topic_creation,
+            include_topic_authorized_operations,
+        })
     }
 }
 
