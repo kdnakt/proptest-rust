@@ -33,6 +33,7 @@ pub struct MetadataRequestTopic {
 impl Readable for MetadataRequestTopic {
     fn read(input: &mut impl Read) -> Result<Self> {
         let topic_id = Uuid::read(input)?;
+        let name = Option::<String>::read_ext(input, "name", true)?;
         todo!()
     }
 }
