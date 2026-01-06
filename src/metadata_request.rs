@@ -1,5 +1,5 @@
-use uuid::Uuid;
 use std::io::{Read, Result};
+use uuid::Uuid;
 
 use crate::arrays::read_nullable_array;
 use crate::readable_writable::Readable;
