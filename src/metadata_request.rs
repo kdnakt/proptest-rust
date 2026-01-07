@@ -2,7 +2,7 @@ use std::io::{Read, Result};
 use uuid::Uuid;
 
 use crate::arrays::read_nullable_array;
-use crate::readable_writable::Readable;
+use crate::readable_writable::{Readable, Writable};
 
 #[derive(Clone, PartialEq)]
 pub struct MetadataRequest {
@@ -34,6 +34,14 @@ impl Readable for MetadataRequestTopic {
     fn read(input: &mut impl Read) -> Result<Self> {
         let topic_id = Uuid::read(input)?;
         let name = Option::<String>::read_ext(input, "name", true)?;
-        todo!()
+        Ok(MetadataRequestTopic { topic_id, name })
+    }
+}
+
+impl Writable for MetadataRequestTopic {
+    fn write(&self, output: &mut impl std::io::Write) -> Result<()> {
+        self.topic_id.write(output)?;
+        self.name.write_ext(output, "name", true)?;
+        Ok(())
     }
 }

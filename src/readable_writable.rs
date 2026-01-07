@@ -17,6 +17,15 @@ pub trait Readable: Sized {
 
 pub trait Writable {
     fn write(&self, output: &mut impl Write) -> io::Result<()>;
+
+    fn write_ext(
+        &self,
+        _output: &mut impl Write,
+        #[allow(unused)] _field_name: &str,
+        #[allow(unused)] _compact: bool,
+    ) -> io::Result<()> {
+        self.write(_output)
+    }
 }
 
 impl Readable for bool {
@@ -35,6 +44,12 @@ impl Readable for Uuid {
     }
 }
 
+impl Writable for Uuid {
+    fn write(&self, output: &mut impl Write) -> io::Result<()> {
+        output.write_all(self.as_bytes())
+    }
+}
+
 impl Readable for Option<String> {
     fn read(input: &mut impl Read) -> io::Result<Self> {
         unimplemented!()
@@ -50,6 +65,21 @@ impl Readable for Option<String> {
         } else {
             read_string(input, len).map(Some)
         }
+    }
+}
+
+impl Writable for Option<String> {
+    fn write(&self, _output: &mut impl Write) -> io::Result<()> {
+        unimplemented!()
+    }
+
+    fn write_ext(
+        &self,
+        _output: &mut impl Write,
+        _field_name: &str,
+        _compact: bool,
+    ) -> io::Result<()> {
+        unimplemented!()
     }
 }
 
