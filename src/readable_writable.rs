@@ -50,6 +50,30 @@ impl Writable for Uuid {
     }
 }
 
+impl Writable for String {
+    fn write(&self, output: &mut impl Write) -> io::Result<()> {
+        unimplemented!()
+    }
+
+    fn write_ext(
+        &self,
+        output: &mut impl Write,
+        field_name: &str,
+        compact: bool,
+    ) -> io::Result<()> {
+        let len = self.len();
+        if len > i16::MAX as usize {
+            Err(Error::new(
+                ErrorKind::Other,
+                invalid_len_message(field_name)(len as i64),
+            ))
+        } else {
+            write_len_i16(output, invalid_len_message(field_name), len as i16, compact)?;
+            output.write(self.as_bytes()).map(|_| ())
+        }
+    }
+}
+
 impl Readable for Option<String> {
     fn read(input: &mut impl Read) -> io::Result<Self> {
         unimplemented!()
@@ -75,11 +99,15 @@ impl Writable for Option<String> {
 
     fn write_ext(
         &self,
-        _output: &mut impl Write,
-        _field_name: &str,
-        _compact: bool,
+        output: &mut impl Write,
+        field_name: &str,
+        compact: bool,
     ) -> io::Result<()> {
-        unimplemented!()
+        if let Some(string) = self {
+            string.write_ext(output, field_name, compact)
+        } else {
+            write_len_i16(output, invalid_len_message(field_name), -1, compact)
+        }
     }
 }
 
@@ -106,6 +134,16 @@ fn read_len_i16(
     } else {
         input.read_i16::<BigEndian>()
     }
+}
+
+#[inline]
+fn write_len_i16(
+    output: &mut impl Write,
+    invalid_len_message: impl FnOnce(i64) -> String,
+    len: i16,
+    compact: bool,
+) -> io::Result<()> {
+    todo!()
 }
 
 #[inline]
