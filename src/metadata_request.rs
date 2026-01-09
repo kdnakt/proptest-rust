@@ -1,8 +1,8 @@
-use std::io::{Read, Result};
+use std::io::{Read, Result, Write};
 use uuid::Uuid;
 
 use crate::arrays::read_nullable_array;
-use crate::readable_writable::{Readable, Writable};
+use crate::readable_writable::{Readable, Writable, write_nullable_array};
 
 #[derive(Clone, PartialEq)]
 pub struct MetadataRequest {
@@ -24,6 +24,15 @@ impl Readable for MetadataRequest {
     }
 }
 
+impl Writable for MetadataRequest {
+    fn write(&self, output: &mut impl Write) -> Result<()> {
+        write_nullable_array(output, "topics", self.topics.as_deref(), true)?;
+        self.allow_auto_topic_creation.write(output)?;
+        self.include_topic_authorized_operations.write(output)?;
+        Ok(())
+    }
+}
+
 #[derive(Clone, PartialEq)]
 pub struct MetadataRequestTopic {
     pub topic_id: Uuid,
@@ -39,7 +48,7 @@ impl Readable for MetadataRequestTopic {
 }
 
 impl Writable for MetadataRequestTopic {
-    fn write(&self, output: &mut impl std::io::Write) -> Result<()> {
+    fn write(&self, output: &mut impl Write) -> Result<()> {
         self.topic_id.write(output)?;
         self.name.write_ext(output, "name", true)?;
         Ok(())

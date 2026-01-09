@@ -36,6 +36,14 @@ impl Readable for bool {
     }
 }
 
+impl Writable for bool {
+    #[inline]
+    fn write(&self, output: &mut impl Write) -> io::Result<()> {
+        let byte = if *self { 1 } else { 0 };
+        output.write_all(&[byte])
+    }
+}
+
 impl Readable for Uuid {
     fn read(input: &mut impl Read) -> io::Result<Self> {
         let mut bytes = [0u8; 16];
@@ -150,4 +158,16 @@ fn write_len_i16(
 fn invalid_len_message(field_name: &str) -> impl FnOnce(i64) -> String {
     let field_name_own = field_name.to_string();
     move |len| format!("string field {field_name_own} had invalid length {len}")
+}
+
+pub(crate) fn write_nullable_array<T>(
+    output: &mut impl Write,
+    field_name: &str,
+    array: Option<&[T]>,
+    compact: bool,
+) -> io::Result<()>
+where
+    T: Writable,
+{
+    todo!()
 }
