@@ -54,3 +54,24 @@ impl Writable for MetadataRequestTopic {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::io::{Cursor, SeekFrom};
+    use proptest::prelude::*;
+    use super::*;
+
+    proptest! {
+        #[test]
+        fn test_serde(data: MetadataRequest) {
+            // Serialize
+            let mut cur = Cursor::new(Vec::<u8>::new());
+            data.write(&mut cur).unwrap();
+            // Deserialize
+            cur.seek(SeekFrom::Start(0)).unwrap();
+            let data_read = MetadataRequest::read(&mut cur).unwrap();
+            // Compare
+            prop_assert_eq!(data_read, data.clone());
+        }
+    }
+}
