@@ -1,10 +1,13 @@
 use std::io::{Read, Result, Write};
+#[cfg(test)] use proptest_derive::Arbitrary;
 use uuid::Uuid;
 
 use crate::arrays::read_nullable_array;
 use crate::readable_writable::{Readable, Writable, write_nullable_array};
+#[cfg(test)] use crate::test_utils::proptest_strategies;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
+#[cfg_attr(test, derive(Arbitrary))]
 pub struct MetadataRequest {
     pub topics: Option<Vec<MetadataRequestTopic>>,
     pub allow_auto_topic_creation: bool,
@@ -33,8 +36,10 @@ impl Writable for MetadataRequest {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
+#[cfg_attr(test, derive(Arbitrary))]
 pub struct MetadataRequestTopic {
+    #[cfg_attr(test, proptest(strategy = "proptest_strategies::uuid()"))]
     pub topic_id: Uuid,
     pub name: Option<String>,
 }
@@ -57,7 +62,7 @@ impl Writable for MetadataRequestTopic {
 
 #[cfg(test)]
 mod tests {
-    use std::io::{Cursor, SeekFrom};
+    use std::io::{Cursor, Seek, SeekFrom};
     use proptest::prelude::*;
     use super::*;
 
