@@ -155,6 +155,16 @@ fn write_len_i16(
 }
 
 #[inline]
+fn write_len_i32(
+    output: &mut impl Write,
+    invalid_len_message: impl FnOnce(i64) -> String,
+    len: i32,
+    compact: bool,
+) -> io::Result<()> {
+    todo!()
+}
+
+#[inline]
 fn invalid_len_message(field_name: &str) -> impl FnOnce(i64) -> String {
     let field_name_own = field_name.to_string();
     move |len| format!("string field {field_name_own} had invalid length {len}")
@@ -169,5 +179,25 @@ pub(crate) fn write_nullable_array<T>(
 where
     T: Writable,
 {
-    todo!()
+    if let Some(array) = array {
+        write_len_i32(output, invalid_len_message(field_name), array.len() as i32, compact)?;
+        write_array_inner(output, array, field_name, compact)
+    } else {
+        write_len_i32(output, invalid_len_message(field_name), -1, compact)
+    }
+}
+
+fn write_array_inner<T>(
+    output: &mut impl Write,
+    array: &[T],
+    field_name: &str,
+    compact: bool,
+) -> io::Result<()>
+where
+    T: Writable,
+{
+    for item in array {
+        item.write_ext(output, field_name, compact)?;
+    }
+    Ok(())
 }
