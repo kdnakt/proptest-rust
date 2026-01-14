@@ -1,7 +1,7 @@
-use byteorder::{BigEndian, ReadBytesExt};
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{self, Error, ErrorKind, Read, Write};
 use uuid::Uuid;
-use varint_rs::VarintReader;
+use varint_rs::{VarintReader, VarintWriter};
 
 pub trait Readable: Sized {
     fn read(input: &mut impl Read) -> io::Result<Self>;
@@ -151,7 +151,18 @@ fn write_len_i16(
     len: i16,
     compact: bool,
 ) -> io::Result<()> {
-    todo!()
+    if len < -1 {
+        Err(Error::new(
+            ErrorKind::Other,
+            invalid_len_message(len as i64),
+        ))
+    } else {
+        if compact {
+            output.write_u32_varint((len + 1) as u32)
+        } else {
+            output.write_i16::<BigEndian>(len)
+        }
+    }
 }
 
 #[inline]
@@ -161,7 +172,18 @@ fn write_len_i32(
     len: i32,
     compact: bool,
 ) -> io::Result<()> {
-    todo!()
+    if len < -1 {
+        Err(Error::new(
+            ErrorKind::Other,
+            invalid_len_message(len as i64),
+        ))
+    } else {
+        if compact {
+            output.write_u32_varint((len + 1) as u32)
+        } else {
+            output.write_i32::<BigEndian>(len)
+        }
+    }
 }
 
 #[inline]
