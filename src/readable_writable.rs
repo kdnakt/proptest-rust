@@ -32,6 +32,7 @@ impl Readable for bool {
     fn read(input: &mut impl Read) -> io::Result<Self> {
         let mut buffer = [0u8; 1];
         input.read_exact(&mut buffer)?;
+        println!("Reading bool: {:?} as {}", buffer, buffer[0] != 0);
         Ok(buffer[0] != 0)
     }
 }
@@ -39,7 +40,8 @@ impl Readable for bool {
 impl Writable for bool {
     #[inline]
     fn write(&self, output: &mut impl Write) -> io::Result<()> {
-        let byte = if *self { 1 } else { 0 };
+        let byte = if *self { 1u8 } else { 0u8 };
+        println!("Writing bool: {} as {}", *self, byte);
         output.write_all(&[byte])
     }
 }

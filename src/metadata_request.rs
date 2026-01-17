@@ -1,12 +1,13 @@
 use std::io::{Read, Result, Write};
 #[cfg(test)] use proptest_derive::Arbitrary;
 use uuid::Uuid;
+use serde::{Serialize, Deserialize};
 
 use crate::arrays::read_nullable_array;
 use crate::readable_writable::{Readable, Writable, write_nullable_array};
 #[cfg(test)] use crate::test_utils::proptest_strategies;
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[cfg_attr(test, derive(Arbitrary))]
 pub struct MetadataRequest {
     pub topics: Option<Vec<MetadataRequestTopic>>,
@@ -36,7 +37,7 @@ impl Writable for MetadataRequest {
     }
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[cfg_attr(test, derive(Arbitrary))]
 pub struct MetadataRequestTopic {
     #[cfg_attr(test, proptest(strategy = "proptest_strategies::uuid()"))]
@@ -71,10 +72,15 @@ mod tests {
         fn test_serde(data: MetadataRequest) {
             // Serialize
             let mut cur = Cursor::new(Vec::<u8>::new());
+            let encoded: Vec<u8> = bincode::serialize(&data).unwrap();
+
+            println!("Original data: {:?}", encoded);
             data.write(&mut cur).unwrap();
             // Deserialize
             cur.seek(SeekFrom::Start(0)).unwrap();
             let data_read = MetadataRequest::read(&mut cur).unwrap();
+            let encoded_read: Vec<u8> = bincode::serialize(&data_read).unwrap();
+            println!("Read data: {:?}", encoded_read);
             // Compare
             prop_assert_eq!(data_read, data.clone());
         }
