@@ -30,33 +30,30 @@ pub trait Writable {
 
 impl Readable for bool {
     fn read(input: &mut impl Read) -> io::Result<Self> {
-        let mut buffer = [0u8; 1];
-        input.read_exact(&mut buffer)?;
-        println!("Reading bool: {:?} as {}", buffer, buffer[0] != 0);
-        Ok(buffer[0] != 0)
+        input.read_i8().map(|v| v != 0)
     }
 }
 
 impl Writable for bool {
     #[inline]
     fn write(&self, output: &mut impl Write) -> io::Result<()> {
-        let byte = if *self { 1u8 } else { 0u8 };
-        println!("Writing bool: {} as {}", *self, byte);
-        output.write_all(&[byte])
+        if *self {
+            output.write_i8(1)
+        } else {
+            output.write_i8(0)
+        }
     }
 }
 
 impl Readable for Uuid {
     fn read(input: &mut impl Read) -> io::Result<Self> {
-        let mut bytes = [0u8; 16];
-        input.read_exact(&mut bytes)?;
-        Ok(Uuid::from_bytes(bytes))
+        input.read_u128::<BigEndian>().map(Uuid::from_u128)
     }
 }
 
 impl Writable for Uuid {
     fn write(&self, output: &mut impl Write) -> io::Result<()> {
-        output.write_all(self.as_bytes())
+        output.write_u128::<BigEndian>(self.as_u128())
     }
 }
 
