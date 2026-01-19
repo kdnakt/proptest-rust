@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 4e0051d4a797af51f50c1eecb5c8b979b15c4152868465a2b5491fa695dcf6b8 # shrinks to data = MetadataRequest { topics: None, allow_auto_topic_creation: false, include_topic_authorized_operations: true }
