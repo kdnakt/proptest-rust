@@ -1,5 +1,5 @@
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-use std::io::{self, Error, ErrorKind, Read, Write};
+use std::io::{self, Error, ErrorKind, Read, Result, Write};
 use uuid::Uuid;
 use varint_rs::{VarintReader, VarintWriter};
 
@@ -144,6 +144,24 @@ fn read_len_i16(
 }
 
 #[inline]
+fn read_len_i32(
+    input: &mut impl Read,
+    invalid_len_message: impl FnOnce(i64) -> String,
+    compact: bool,
+) -> io::Result<i32> {
+    if compact {
+        let len = (input.read_u32_varint()? as i64) - 1;
+        if len > i32::MAX as i64 {
+            Err(Error::new(ErrorKind::Other, invalid_len_message(len)))
+        } else {
+            Ok(len as i32)
+        }
+    } else {
+        input.read_i32::<BigEndian>()
+    }
+}
+
+#[inline]
 fn write_len_i16(
     output: &mut impl Write,
     invalid_len_message: impl FnOnce(i64) -> String,
@@ -221,4 +239,38 @@ where
         item.write_ext(output, field_name, compact)?;
     }
     Ok(())
+}
+
+#[inline]
+pub(crate) fn read_nullable_array<T>(
+    input: &mut impl Read,
+    field_name: &str,
+    compact: bool,
+) -> Result<Option<Vec<T>>>
+where
+    T: Readable,
+{
+    let len = read_len_i32(input, invalid_len_message(field_name), compact)?;
+    if len < 0 {
+        Ok(None)
+    } else {
+        read_array_inner(input, len, field_name, compact).map(Some)
+    }
+}
+
+#[inline]
+fn read_array_inner<T>(
+    input: &mut impl Read,
+    len: i32,
+    field_name: &str,
+    compact: bool,
+) -> Result<Vec<T>>
+where
+    T: Readable,
+{
+    let mut vec: Vec<T> = Vec::with_capacity(len as usize);
+    for _ in 0..len {
+        vec.push(T::read_ext(input, field_name, compact)?);
+    }
+    Ok(vec)
 }

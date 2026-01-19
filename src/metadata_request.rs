@@ -3,8 +3,7 @@ use std::io::{Read, Result, Write};
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 
-use crate::arrays::read_nullable_array;
-use crate::readable_writable::{Readable, Writable, write_nullable_array};
+use crate::readable_writable::{Readable, read_nullable_array, Writable, write_nullable_array};
 #[cfg(test)] use crate::test_utils::proptest_strategies;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
