@@ -89,10 +89,7 @@ impl Readable for Option<String> {
     fn read_ext(input: &mut impl Read, field_name: &str, compact: bool) -> io::Result<Self> {
         let len = read_len_i16(input, invalid_len_message(field_name), compact)?;
         if len < 0 {
-            Err(Error::new(
-                ErrorKind::Other,
-                format!("non-nullable field {field_name} was serialized as null"),
-            ))
+            Ok(None)
         } else {
             read_string(input, len).map(Some)
         }
