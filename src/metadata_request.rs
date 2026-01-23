@@ -71,15 +71,10 @@ mod tests {
         fn test_serde(data: MetadataRequest) {
             // Serialize
             let mut cur = Cursor::new(Vec::<u8>::new());
-            let encoded: Vec<u8> = bincode::serialize(&data).unwrap();
-
-            println!("Original data: {:?}", encoded);
             data.write(&mut cur).unwrap();
             // Deserialize
             cur.seek(SeekFrom::Start(0)).unwrap();
             let data_read = MetadataRequest::read(&mut cur).unwrap();
-            let encoded_read: Vec<u8> = bincode::serialize(&data_read).unwrap();
-            println!("Read data: {:?}", encoded_read);
             // Compare
             prop_assert_eq!(data_read, data.clone());
         }
