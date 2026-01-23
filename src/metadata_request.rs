@@ -3,7 +3,7 @@ use std::io::{Read, Result, Write};
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 
-use crate::readable_writable::{Readable, read_nullable_array, Writable, write_nullable_array};
+use crate::{readable_writable::{Readable, Writable, read_nullable_array, write_nullable_array}, tagged_fields::{RawTaggedField, read_tagged_fields}};
 #[cfg(test)] use crate::test_utils::proptest_strategies;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
@@ -12,6 +12,7 @@ pub struct MetadataRequest {
     pub topics: Option<Vec<MetadataRequestTopic>>,
     pub allow_auto_topic_creation: bool,
     pub include_topic_authorized_operations: bool,
+    pub _unknown_tagged_fields: Vec<RawTaggedField>,
 }
 
 impl Readable for MetadataRequest {
@@ -19,10 +20,17 @@ impl Readable for MetadataRequest {
         let topics = read_nullable_array::<MetadataRequestTopic>(input, "topics", true)?;
         let allow_auto_topic_creation = bool::read(input)?;
         let include_topic_authorized_operations = bool::read(input)?;
+        let tagged_fields_callback = |tag: i32, _:&[u8]| {
+            match tag {
+                _ => Ok(false),
+            }
+        };
+        let _unknown_tagged_fields = read_tagged_fields(input, tagged_fields_callback)?;
         Ok(MetadataRequest {
             topics,
             allow_auto_topic_creation,
             include_topic_authorized_operations,
+            _unknown_tagged_fields,
         })
     }
 }

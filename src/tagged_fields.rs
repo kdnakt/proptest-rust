@@ -1,10 +1,12 @@
-use std::io::{Result, Write};
+use std::io::{Read, Result, Write};
+#[cfg(test)] use proptest_derive::Arbitrary;
 use serde::{Deserialize, Serialize};
 use varint_rs::{VarintReader, VarintWriter};
 
 use crate::readable_writable::{Readable, Writable};
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[cfg_attr(test, derive(Arbitrary))]
 pub struct RawTaggedField {
     pub tag: i32,
     pub data: Vec<u8>,
@@ -27,4 +29,11 @@ impl Writable for RawTaggedField {
         output.write(&self.data)?;
         Ok(())
     }
+}
+
+pub(crate) fn read_tagged_fields(
+    input: &mut impl Read,
+    mut callback: impl FnMut(i32, &[u8]) -> Result<bool>,
+) -> Result<Vec<RawTaggedField>> {
+    todo!()
 }
