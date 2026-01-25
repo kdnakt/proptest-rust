@@ -12,6 +12,7 @@ pub struct MetadataRequest {
     pub topics: Option<Vec<MetadataRequestTopic>>,
     pub allow_auto_topic_creation: bool,
     pub include_topic_authorized_operations: bool,
+    #[cfg_attr(test, proptest(strategy = "proptest_strategies::unknown_tagged_fields()"))]
     pub _unknown_tagged_fields: Vec<RawTaggedField>,
 }
 
