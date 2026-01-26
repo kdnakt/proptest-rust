@@ -51,13 +51,21 @@ pub struct MetadataRequestTopic {
     #[cfg_attr(test, proptest(strategy = "proptest_strategies::uuid()"))]
     pub topic_id: Uuid,
     pub name: Option<String>,
+    #[cfg_attr(test, proptest(strategy = "proptest_strategies::unknown_tagged_fields()"))]
+    pub _unknown_tagged_fields: Vec<RawTaggedField>,
 }
 
 impl Readable for MetadataRequestTopic {
     fn read(input: &mut impl Read) -> Result<Self> {
         let topic_id = Uuid::read(input)?;
         let name = Option::<String>::read_ext(input, "name", true)?;
-        Ok(MetadataRequestTopic { topic_id, name })
+        let tagged_fields_callback = |tag: i32, _:&[u8]| {
+            match tag {
+                _ => Ok(false),
+            }
+        };
+        let _unknown_tagged_fields = read_tagged_fields(input, tagged_fields_callback)?;
+        Ok(MetadataRequestTopic { topic_id, name, _unknown_tagged_fields })
     }
 }
 
