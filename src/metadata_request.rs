@@ -3,7 +3,7 @@ use std::io::{Read, Result, Write};
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 
-use crate::{readable_writable::{Readable, Writable, read_nullable_array, write_nullable_array}, tagged_fields::{RawTaggedField, read_tagged_fields}};
+use crate::{readable_writable::{Readable, Writable, read_nullable_array, write_nullable_array}, tagged_fields::{RawTaggedField, read_tagged_fields, write_tagged_fields}};
 #[cfg(test)] use crate::test_utils::proptest_strategies;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
@@ -73,6 +73,7 @@ impl Writable for MetadataRequestTopic {
     fn write(&self, output: &mut impl Write) -> Result<()> {
         self.topic_id.write(output)?;
         self.name.write_ext(output, "name", true)?;
+        write_tagged_fields(output, &[], &self._unknown_tagged_fields)?;
         Ok(())
     }
 }

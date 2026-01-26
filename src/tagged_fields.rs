@@ -37,3 +37,11 @@ pub(crate) fn read_tagged_fields(
 ) -> Result<Vec<RawTaggedField>> {
     todo!()
 }
+
+pub(crate) fn write_tagged_fields(
+    output: &mut impl Write,
+    known_tagged_fields: &[RawTaggedField],
+    unknown_tagged_fields: &[RawTaggedField],
+) -> Result<()> {
+    todo!()
+}
