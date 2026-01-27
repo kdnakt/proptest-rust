@@ -1,4 +1,4 @@
-use std::io::{Read, Result, Write};
+use std::io::{Error, ErrorKind, Read, Result, Write};
 #[cfg(test)] use proptest_derive::Arbitrary;
 use serde::{Deserialize, Serialize};
 use varint_rs::{VarintReader, VarintWriter};
@@ -43,5 +43,40 @@ pub(crate) fn write_tagged_fields(
     known_tagged_fields: &[RawTaggedField],
     unknown_tagged_fields: &[RawTaggedField],
 ) -> Result<()> {
-    todo!()
+    let mut max_known_tag = -1;
+    for tag_pair in known_tagged_fields.windows(2) {
+        let tag0 = &tag_pair[0].tag;
+        let tag1 = &tag_pair[1].tag;
+        if tag0 >= tag1 {
+            return Err(Error::new(ErrorKind::Other, format!(
+                "Invalid raw tag field list: tag {tag1:?} comes after tag {tag0:?}, but is not higher than it."
+            )));
+        }
+        if *tag0 > max_known_tag {
+            max_known_tag = *tag0;
+        }
+    }
+    for tag_pair in unknown_tagged_fields.windows(2) {
+        let tag0 = &tag_pair[0].tag;
+        let tag1 = &tag_pair[1].tag;
+        if tag0 >= tag1 {
+            return Err(Error::new(ErrorKind::Other, format!(
+                "Invalid raw tag field list: tag {tag1:?} comes after tag {tag0:?}, but is not higher than it."
+            )));
+        }
+        if *tag0 <= max_known_tag {
+            return Err(Error::new(ErrorKind::Other, format!(
+                "Invalid raw tag field list: tag {tag0:?} is not higher than the maximum known tag {max_known_tag:?}."
+            )));
+        }
+    }
+
+    output.write_u32_varint((known_tagged_fields.len() + unknown_tagged_fields.len()) as u32)?;
+    for el in known_tagged_fields {
+        el.write(output)?;
+    }
+    for el in unknown_tagged_fields {
+        el.write(output)?;
+    }
+    Ok(())
 }
