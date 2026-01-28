@@ -41,6 +41,7 @@ impl Writable for MetadataRequest {
         write_nullable_array(output, "topics", self.topics.as_deref(), true)?;
         self.allow_auto_topic_creation.write(output)?;
         self.include_topic_authorized_operations.write(output)?;
+        write_tagged_fields(output, &[], &self._unknown_tagged_fields)?;
         Ok(())
     }
 }

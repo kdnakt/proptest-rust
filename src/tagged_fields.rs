@@ -35,7 +35,15 @@ pub(crate) fn read_tagged_fields(
     input: &mut impl Read,
     mut callback: impl FnMut(i32, &[u8]) -> Result<bool>,
 ) -> Result<Vec<RawTaggedField>> {
-    todo!()
+    let len = input.read_u32_varint()?;
+    let mut unknown_tagged_fiels: Vec<RawTaggedField> = Vec::new();
+    for _ in 0..len {
+        let field = RawTaggedField::read(input)?;
+        if !callback(field.tag, &field.data)? {
+            unknown_tagged_fiels.push(field);
+        }
+    }
+    Ok(unknown_tagged_fiels)
 }
 
 pub(crate) fn write_tagged_fields(
