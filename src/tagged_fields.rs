@@ -88,3 +88,16 @@ pub(crate) fn write_tagged_fields(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        fn test_serde(data: RawTaggedField) {
+            crate::test_utils::test_serde(&data)?;
+        }
+    }
+}
