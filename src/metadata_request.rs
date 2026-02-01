@@ -1,10 +1,15 @@
+#[cfg(test)]
+use proptest_derive::Arbitrary;
+use serde::{Deserialize, Serialize};
 use std::io::{Read, Result, Write};
-#[cfg(test)] use proptest_derive::Arbitrary;
 use uuid::Uuid;
-use serde::{Serialize, Deserialize};
 
-use crate::{readable_writable::{Readable, Writable, read_nullable_array, write_nullable_array}, tagged_fields::{RawTaggedField, read_tagged_fields, write_tagged_fields}};
-#[cfg(test)] use crate::test_utils::proptest_strategies;
+#[cfg(test)]
+use crate::test_utils::proptest_strategies;
+use crate::{
+    readable_writable::{Readable, Writable, read_nullable_array, write_nullable_array},
+    tagged_fields::{RawTaggedField, read_tagged_fields, write_tagged_fields},
+};
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[cfg_attr(test, derive(Arbitrary))]
@@ -12,7 +17,10 @@ pub struct MetadataRequest {
     pub topics: Option<Vec<MetadataRequestTopic>>,
     pub allow_auto_topic_creation: bool,
     pub include_topic_authorized_operations: bool,
-    #[cfg_attr(test, proptest(strategy = "proptest_strategies::unknown_tagged_fields()"))]
+    #[cfg_attr(
+        test,
+        proptest(strategy = "proptest_strategies::unknown_tagged_fields()")
+    )]
     pub _unknown_tagged_fields: Vec<RawTaggedField>,
 }
 
@@ -21,10 +29,8 @@ impl Readable for MetadataRequest {
         let topics = read_nullable_array::<MetadataRequestTopic>(input, "topics", true)?;
         let allow_auto_topic_creation = bool::read(input)?;
         let include_topic_authorized_operations = bool::read(input)?;
-        let tagged_fields_callback = |tag: i32, _:&[u8]| {
-            match tag {
-                _ => Ok(false),
-            }
+        let tagged_fields_callback = |tag: i32, _: &[u8]| match tag {
+            _ => Ok(false),
         };
         let _unknown_tagged_fields = read_tagged_fields(input, tagged_fields_callback)?;
         Ok(MetadataRequest {
@@ -52,7 +58,10 @@ pub struct MetadataRequestTopic {
     #[cfg_attr(test, proptest(strategy = "proptest_strategies::uuid()"))]
     pub topic_id: Uuid,
     pub name: Option<String>,
-    #[cfg_attr(test, proptest(strategy = "proptest_strategies::unknown_tagged_fields()"))]
+    #[cfg_attr(
+        test,
+        proptest(strategy = "proptest_strategies::unknown_tagged_fields()")
+    )]
     pub _unknown_tagged_fields: Vec<RawTaggedField>,
 }
 
@@ -60,13 +69,15 @@ impl Readable for MetadataRequestTopic {
     fn read(input: &mut impl Read) -> Result<Self> {
         let topic_id = Uuid::read(input)?;
         let name = Option::<String>::read_ext(input, "name", true)?;
-        let tagged_fields_callback = |tag: i32, _:&[u8]| {
-            match tag {
-                _ => Ok(false),
-            }
+        let tagged_fields_callback = |tag: i32, _: &[u8]| match tag {
+            _ => Ok(false),
         };
         let _unknown_tagged_fields = read_tagged_fields(input, tagged_fields_callback)?;
-        Ok(MetadataRequestTopic { topic_id, name, _unknown_tagged_fields })
+        Ok(MetadataRequestTopic {
+            topic_id,
+            name,
+            _unknown_tagged_fields,
+        })
     }
 }
 
@@ -81,9 +92,9 @@ impl Writable for MetadataRequestTopic {
 
 #[cfg(test)]
 mod tests {
-    use std::io::{Cursor, Seek, SeekFrom};
-    use proptest::prelude::*;
     use super::*;
+    use proptest::prelude::*;
+    use std::io::{Cursor, Seek, SeekFrom};
 
     proptest! {
         #[test]

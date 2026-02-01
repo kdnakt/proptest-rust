@@ -1,10 +1,12 @@
 use proptest::{prelude::TestCaseError, prop_assert_eq};
 
-use std::{fmt::Debug, io::{Cursor, Seek, SeekFrom}};
 use crate::readable_writable::{Readable, Writable};
+use std::{
+    fmt::Debug,
+    io::{Cursor, Seek, SeekFrom},
+};
 
 #[cfg(test)]
-
 pub(crate) mod proptest_strategies;
 
 pub(crate) fn test_serde<T>(data: &T) -> Result<(), TestCaseError>

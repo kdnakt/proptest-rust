@@ -1,5 +1,5 @@
-use proptest::prelude::*;
 use proptest::collection;
+use proptest::prelude::*;
 use uuid::Uuid;
 
 use crate::tagged_fields::RawTaggedField;

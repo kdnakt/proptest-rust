@@ -216,7 +216,12 @@ where
     T: Writable,
 {
     if let Some(array) = array {
-        write_len_i32(output, invalid_len_message(field_name), array.len() as i32, compact)?;
+        write_len_i32(
+            output,
+            invalid_len_message(field_name),
+            array.len() as i32,
+            compact,
+        )?;
         write_array_inner(output, array, field_name, compact)
     } else {
         write_len_i32(output, invalid_len_message(field_name), -1, compact)
