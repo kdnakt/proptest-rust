@@ -94,19 +94,11 @@ impl Writable for MetadataRequestTopic {
 mod tests {
     use super::*;
     use proptest::prelude::*;
-    use std::io::{Cursor, Seek, SeekFrom};
 
     proptest! {
         #[test]
         fn test_serde(data: MetadataRequest) {
-            // Serialize
-            let mut cur = Cursor::new(Vec::<u8>::new());
-            data.write(&mut cur).unwrap();
-            // Deserialize
-            cur.seek(SeekFrom::Start(0)).unwrap();
-            let data_read = MetadataRequest::read(&mut cur).unwrap();
-            // Compare
-            prop_assert_eq!(data_read, data.clone());
+            crate::test_utils::test_serde(&data)?;
         }
     }
 }
