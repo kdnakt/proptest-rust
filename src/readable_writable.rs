@@ -58,7 +58,7 @@ impl Writable for Uuid {
 }
 
 impl Writable for String {
-    fn write(&self, output: &mut impl Write) -> io::Result<()> {
+    fn write(&self, #[allow(unused)] output: &mut impl Write) -> io::Result<()> {
         unimplemented!()
     }
 
@@ -82,7 +82,7 @@ impl Writable for String {
 }
 
 impl Readable for Option<String> {
-    fn read(input: &mut impl Read) -> io::Result<Self> {
+    fn read(#[allow(unused)] input: &mut impl Read) -> io::Result<Self> {
         unimplemented!()
     }
 
